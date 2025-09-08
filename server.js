@@ -30,6 +30,16 @@ app.use(
   })
 );
 
+// ===================== Proxy Swagger cho Java =====================
+app.use(
+  "/swagger-ui",
+  createProxyMiddleware({
+    target: "https://spring-api-u4ro.onrender.com",
+    changeOrigin: true
+  })
+);
+
+
 // ===================== Check Gateway =====================
 app.get("/", (req, res) => {
   res.json({ message: "API Gateway is running 🚀" });
