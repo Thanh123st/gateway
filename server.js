@@ -43,14 +43,14 @@ app.listen(PORT, () => {
 // ===================== Keep Alive =====================
 const NODE_API = "https://expressbackend-jvvv.onrender.com";
 const JAVA_API = "https://spring-api-u4ro.onrender.com";
-const GATEWAY_API = `http://localhost:${PORT}`;
+const GATEWAY_API = `https://gateway-2v7j.onrender.com`;
 
 setInterval(async () => {
   try {
     // Ping NodeJS
-    await fetch(NODE_API + "/api/news").catch(() => {});
+    await fetch(NODE_API).catch(() => {});
     // Ping Java
-    await fetch(JAVA_API + "/api/auth").catch(() => {});
+    await fetch(JAVA_API).catch(() => {});
     // Ping chính Gateway
     await fetch(GATEWAY_API).catch(() => {});
     console.log("🔄 Keep-alive ping executed");
