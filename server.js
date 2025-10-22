@@ -1,6 +1,7 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
+import { startKeepAlive } from "./keepAlive.js";
 
 const app = express();
 app.use(cors());
@@ -19,50 +20,45 @@ app.use((req, res, next) => {
 
 // ==================== Helper: proxy request ====================
 async function proxyJson(targetUrl, req) {
-  // copy headers từ client, loại bỏ host/content-length
   const headers = { ...req.headers };
   delete headers.host;
-  delete headers['content-length'];
-  delete headers['accept-encoding']; // tránh lỗi decompression
+  delete headers["content-length"];
+  delete headers["accept-encoding"];
 
   const response = await fetch(targetUrl, {
     method: req.method,
     headers,
-    body: ['GET', 'HEAD'].includes(req.method) ? undefined : JSON.stringify(req.body),
+    body: ["GET", "HEAD"].includes(req.method)
+      ? undefined
+      : JSON.stringify(req.body),
   });
 
-  // forward headers, loại bỏ content-encoding
   const respHeaders = {};
   response.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== 'content-encoding') respHeaders[key] = value;
+    if (key.toLowerCase() !== "content-encoding") respHeaders[key] = value;
   });
 
-  // đọc body an toàn
   let data = null;
-  const contentType = response.headers.get('content-type') || '';
-  const text = await response.text(); // luôn đọc text trước
+  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text();
 
   if (text) {
-    if (contentType.includes('application/json')) {
+    if (contentType.includes("application/json")) {
       try {
         data = JSON.parse(text);
-      } catch (err) {
-        // fallback nếu JSON lỗi
+      } catch {
         data = text;
       }
     } else {
-      // không phải JSON, giữ nguyên text
       data = text;
     }
-  } 
-  // nếu text rỗng, data = null
+  }
 
   return { status: response.status, headers: respHeaders, data };
 }
 
-
 // ==================== Forward Node backend ====================
-app.use(['/api/news', '/api/hospital', '/api/data'], async (req, res) => {
+app.use(["/api/news", "/api/hospital", "/api/data"], async (req, res) => {
   try {
     const result = await proxyJson(`${NODE_API}${req.originalUrl}`, req);
     res.status(result.status).set(result.headers).json(result.data);
@@ -83,9 +79,13 @@ app.use(async (req, res) => {
   }
 });
 
-// ==================== Default route ====================
-app.get("/", (req, res) => {
-  res.json({ message: "API Gateway is running 🚀" });
+// ==================== Ping route (for KeepAlive or monitoring) ====================
+app.get("/ping", (req, res) => {
+  res.json({
+    message: "✅ Gateway is alive",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime().toFixed(2) + "s",
+  });
 });
 
 // ==================== Start ====================
@@ -94,18 +94,11 @@ app.listen(PORT, () => {
   console.log(`✅ Gateway running on http://localhost:${PORT}`);
 });
 
-// ===================== Keep Alive =====================
-const NODE_API_PING = "https://expressbackend-aeyt.onrender.com/ping";
-const JAVA_API_PING = "https://spring-api-u4ro.onrender.com/api/auth/ping";
-const GATEWAY_API = "https://gateway-2v7j.onrender.com";
+// ==================== Import & Start Keep Alive ====================
+const KEEP_ALIVE_TARGETS = {
+  NodeAPI: "https://expressbackend-aeyt.onrender.com/ping",
+  JavaAPI: "https://spring-api-u4ro.onrender.com/api/auth/ping",
+  Gateway: "https://gateway-2v7j.onrender.com/ping",
+};
 
-setInterval(async () => {
-  try {
-    await fetch(NODE_API_PING).catch(() => {});
-    await fetch(JAVA_API_PING).catch(() => {});
-    await fetch(GATEWAY_API).catch(() => {});
-    console.log("🔄 Keep-alive ping executed");
-  } catch (err) {
-    console.error("❌ Keep-alive error:", err.message);
-  }
-}, 1000 * 60 * 5);
+startKeepAlive(KEEP_ALIVE_TARGETS);

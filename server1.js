@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==================== CONFIG ====================
-const NODE_API = "https://expressbackend-aeyt.onrender.com";
+const NODE_API = "https://expressbackend-jvvv.onrender.com";
 const JAVA_API = "https://spring-api-u4ro.onrender.com";
 
 // ==================== Middleware log ====================
