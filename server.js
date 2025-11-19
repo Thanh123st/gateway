@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ==================== CONFIG ====================
 const NODE_API = "https://expressbackend-80zz.onrender.com";
-const JAVA_API = "https://spring-api-u4ro.onrender.com";
+const JAVA_API = "https://javabackend-s160.onrender.com";
 
 // ==================== Middleware log ====================
 app.use((req, res, next) => {
@@ -97,7 +97,7 @@ app.listen(PORT, () => {
 // ==================== Import & Start Keep Alive ====================
 const KEEP_ALIVE_TARGETS = {
   NodeAPI: "https://expressbackend-80zz.onrender.com/ping",
-  JavaAPI: "https://spring-api-u4ro.onrender.com/api/auth/ping",
+  JavaAPI: "https://javabackend-s160.onrender.com/api/auth/ping",
   Gateway: "https://gateway-2v7j.onrender.com/ping",
 };
 
