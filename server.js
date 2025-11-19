@@ -58,7 +58,7 @@ async function proxyJson(targetUrl, req) {
 }
 
 // ==================== Forward Node backend ====================
-app.use(["/api/news", "/api/hospital", "/api/data"], async (req, res) => {
+app.use(["/api/news", "/api/hospital", "/api/data","/api/category"], async (req, res) => {
   try {
     const result = await proxyJson(`${NODE_API}${req.originalUrl}`, req);
     res.status(result.status).set(result.headers).json(result.data);
